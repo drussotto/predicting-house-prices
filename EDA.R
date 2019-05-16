@@ -54,6 +54,13 @@ ggplot(data=hp_train[sqft_lot15<=250000], aes(x=hp_train[sqft_lot15<=250000]$sqf
   geom_histogram() +
   theme_minimal()
 
-ggpairs(hp_train,
+set.seed(20190430)
+ggpairs(hp_train[sample(nrow(hp_train), 500),],
         columns=c("price", "bedrooms", "bathrooms", "floors", "sqft_above", "sqft_basement", "sqft_living", "sqft_living15", "sqft_lot", "sqft_lot15"))
+
+
+
+# Nothing missing, hurrah
+any(!complete.cases(hp_train))
+
 
