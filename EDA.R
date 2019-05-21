@@ -63,4 +63,16 @@ ggpairs(hp_train[sample(nrow(hp_train), 500),],
 # Nothing missing, hurrah
 any(!complete.cases(hp_train))
 
+ggplot(data=hp_train, aes(x=waterfront)) + geom_bar()
+# Ranked categorical variables
+ggplot(data=hp_train, aes(x=view)) + geom_bar()
+ggplot(data=hp_train, aes(x=condition)) + geom_bar()
+ggplot(data=hp_train, aes(x=grade)) + geom_bar()
+
+hp_train$zipcode <- factor(hp_train$zipcode, 
+                           levels=names(sort(table(hp_train$zipcode), 
+                                             decreasing=TRUE)))
+
+ggplot(data=hp_train, aes(x=zipcode)) + geom_bar()
+
 

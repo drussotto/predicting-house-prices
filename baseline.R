@@ -20,12 +20,22 @@ scale_features <- function(df) {
   return(df)
   
 }
+
+
+
+hp_train <- create_date_features(hp_train)
+
+
 # I would much rather just exclude these features from the formula, but I ran into this:
 # https://stackoverflow.com/q/22315394
 hp_train$id <- NULL
 hp_test$id <- NULL
 hp_train$date <- NULL
 hp_test$date <- NULL
+
+# same number of levels, phew
+hp_train$zipcode <- factor(hp_train$zipcode)
+hp_test$zipcode <- factor(hp_test$zipcode)
 
 hp_train_scaled <- scale_features(hp_train)
 
@@ -37,6 +47,7 @@ linear_baseline <- lm(price~., hp_train.train)
 
 summary(linear_baseline)
 
+# TODO: removing insignificant zipcodes?
 linear_baseline <- lm(price~. -sqft_lot -floors -sqft_basement, hp_train.train)
 
 summary(linear_baseline)
