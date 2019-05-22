@@ -1,7 +1,6 @@
-library("data.table")
-library("ranger")
+source("load_dependencies.R")
 
-pipeline_casero <- function(df, preprocessing=c(), creation=c(), selection=c()) {
+pipeline_casero <- function(df, preprocessing=c(), creation=c(), selection=c(), model="ranger", k=3) {
   df <- data.table(df)
   
   for (f in preprocessing) {
@@ -16,12 +15,10 @@ pipeline_casero <- function(df, preprocessing=c(), creation=c(), selection=c()) 
     df <- f(df)
   }
   
-  #TODO: Work in the modeling
+  tc <- trainControl(method="cv", number=k)
   
-  return(df)
+  #TODO: Work in the modeling
+  trained <- train(price~., df, method=model, metric="MAPE", maximize=FALSE,trControl=tc)
+  
+  return(trained)
 }
-
-pp <- c(create_date_features, factorize_zips)
-fc <- c(yrs_since_renovated, sum_grades, bed_bath_ratio,size_yard,cluster_loc)
-
-names(pipeline_casero(hp_train, pp, fc))

@@ -1,34 +1,6 @@
 library("data.table")
 library("dbscan")
 
-
-create_date_features <- function(df) {
-  # in R this is a new object
-  df <- data.table(df)
-  
-  df[, c("day", "month", "year") := tstrsplit(hp_train$date, "/", type.convert = T)]
-  
-  return(df)
-  
-  
-}
-
-
-factorize_zips <- function(df) {
-  df <- data.table(df)
-  
-  df[, c("zipcode") := factor(zipcode, 
-                              levels=names(sort(table(zipcode), 
-                                                decreasing=TRUE)))]
- return(df) 
-}
-
-hp_train$zipcode <- factor(hp_train$zipcode, 
-                           levels=names(sort(table(hp_train$zipcode), 
-                                             decreasing=TRUE)))
-
-
-
 yrs_since_renovated <- function(df) {
   df <- data.table(df)
   
@@ -50,7 +22,7 @@ sum_grades <- function(df) {
 bed_bath_ratio <- function(df) {
   df <- data.table(df)
   
-  df[, c("bed_bath_ratio") := (bed / bath)]
+  df[, c("bed_bath_ratio") := (bedrooms / bathrooms)]
   
   return(df)
 }
