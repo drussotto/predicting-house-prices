@@ -10,14 +10,19 @@ fc <- c()
 
 lm_baseline <- pipeline_casero(hp_train, pp, fc, model="lm")
 
+saveRDS(lm_baseline, "./models/linear_baseline.RData")
+
+
+pp <- c(create_date_features, rm_zip, rm_id)
+fc <- c()
 tg <- data.table(expand.grid(mtry=15,
                              splitrule='variance',
                              min.node.size=5))
 
-
-#linear_model <- pipeline_casero(sample(hp_train, floor(nrow(hp_train)*0.1, pp, fc, model="lm")
 rf_baseline <- pipeline_casero(hp_train,
                                pp, 
                                fc,
                                model="ranger",
                                tunegrid=tg)
+
+saveRDS(rf_baseline, "./models/rf_baseline.RData")

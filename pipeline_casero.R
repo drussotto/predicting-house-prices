@@ -1,6 +1,7 @@
 source("load_dependencies.R")
 
-pipeline_casero <- function(df, preprocessing=c(), creation=c(), selection=c(), model="ranger", tunegrid=NULL, k=3) {
+pipeline_casero <- function(df, preprocessing=c(), creation=c(), selection=c(), 
+                            model="ranger", tunegrid=NULL, tunelength=10, k=3) {
   df <- data.table(df)
   
   print(paste("Beginning preprocessing step at", Sys.time()))
@@ -18,10 +19,19 @@ pipeline_casero <- function(df, preprocessing=c(), creation=c(), selection=c(), 
     df <- f(df)
   }
   
-  tc <- trainControl(method="cv", number=k, summaryFunction=summary_w_mape)
+  tc <- trainControl(method="cv", number=k, search="random", summaryFunction=summary_w_mape)
   
   print(paste("Beginning modeling step at", Sys.time()))
-  trained <- train(price~., df, method=model, metric="MAPE", maximize=FALSE,trControl=tc, tuneGrid=tunegrid)
+  trained <- train(price~.,
+                   df,
+                   method=model,
+                   metric="MAPE",
+                   maximize=FALSE,
+                   trControl=tc,
+                   tuneGrid=tunegrid,
+                   tuneLength=tunlength)
+  
+  print(paste("Finished!", Sys.time()))
   
   return(trained)
 }
