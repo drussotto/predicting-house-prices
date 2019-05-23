@@ -1,24 +1,27 @@
 source("load_dependencies.R")
 
-pipeline_casero <- function(df, preprocessing=c(), creation=c(), selection=c(), model="ranger", k=3) {
+pipeline_casero <- function(df, preprocessing=c(), creation=c(), selection=c(), model="ranger", tunegrid=NULL, k=3) {
   df <- data.table(df)
   
+  print(paste("Beginning preprocessing step at", Sys.time()))
   for (f in preprocessing) {
     df <- f(df)
   }
   
+  print(paste("Beginning feature creation step at", Sys.time()))
   for (f in creation) {
     df <- f(df)
   }
   
+  print(paste("Beginning feature selection step at", Sys.time()))
   for(f in selection) {
     df <- f(df)
   }
   
-  tc <- trainControl(method="cv", number=k)
+  tc <- trainControl(method="cv", number=k, summaryFunction=summary_w_mape)
   
-  #TODO: Work in the modeling
-  trained <- train(price~., df, method=model, metric="MAPE", maximize=FALSE,trControl=tc)
+  print(paste("Beginning modeling step at", Sys.time()))
+  trained <- train(price~., df, method=model, metric="MAPE", maximize=FALSE,trControl=tc, tuneGrid=tunegrid)
   
   return(trained)
 }
