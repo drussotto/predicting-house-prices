@@ -1,9 +1,7 @@
-library("data.table")
-library("ggplot2")
-library("GGally")
+source("./scripts/load_dependencies.R")
 
-hp_train <- fread("house_price_train.csv")
-hp_test <- fread("house_price_test.csv")
+hp_train <- fread("./data/house_price_train.csv")
+hp_test <- fread("./data/house_price_test.csv")
 
 summary(as.factor(hp_train$bedrooms))
 

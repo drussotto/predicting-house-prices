@@ -1,6 +1,3 @@
-library("data.table")
-library("dbscan")
-
 yrs_since_renovated <- function(df) {
   df <- data.table(df)
   

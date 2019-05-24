@@ -1,6 +1,8 @@
+source("./scripts/load_dependencies.R")
+
 rf_model_gridsearch <- readRDS("models/rf_model_gridsearch.rds")
 
-hp_test <- fread("house_price_test.csv")
+hp_test <- fread("./data/house_price_test.csv")
 
 pp <- c(create_date_features, rm_zip, rm_id)
 fc <- c(yrs_since_renovated, sum_grades, bed_bath_ratio, size_yard, cluster_loc)
@@ -25,4 +27,4 @@ make_predictions <- function(df, preprocessing, feature_creation, train_obj) {
 preds <- make_predictions(hp_test, pp, fc, rf_model_gridsearch)
 
 guesses <- data.table(id=hp_test$id, pred=preds$predictions)
-fwrite(guesses, "guesses.csv")
+fwrite(guesses, "./data/guesses.csv")

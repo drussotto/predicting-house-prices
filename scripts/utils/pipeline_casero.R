@@ -1,5 +1,3 @@
-source("load_dependencies.R")
-
 pipeline_casero <- function(df, preprocessing=c(), creation=c(), selection=c(), 
                             model="ranger", tunegrid=NULL, tunelength=10, k=3) {
   df <- data.table(df)

@@ -1,9 +1,6 @@
-source("load_dependencies.R")
-source("preprocessing.R")
-source("feature_creation.R")
-source("pipeline_casero.R")
+source("./scripts/load_dependencies.R")
 
-hp_train <- fread("house_price_train.csv")
+hp_train <- fread("./data/house_price_train.csv")
 
 pp <- c(create_date_features, rm_zip, rm_id)
 fc <- c()
