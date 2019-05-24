@@ -20,7 +20,7 @@ rf_model_all_features <- pipeline_casero(hp_train,
                                model="ranger",
                                tunegrid=tg)
 
-saveRDS(rf_model_all_features, "./models/rf_model_all_features.RData")
+saveRDS(rf_model_all_features, "./models/rf_model_all_features.rds")
 
 
 pp <- c(create_date_features, rm_zip, rm_id)
@@ -35,7 +35,7 @@ rf_model_rfe <- pipeline_casero(hp_train,
                              model="ranger",
                              tunegrid=tg)
 
-saveRDS(rf_model_rfe, "./models/rf_model_rfe.RData")
+saveRDS(rf_model_rfe, "./models/rf_model_rfe.rds")
 
 pp <- c(create_date_features, rm_zip, rm_id)
 fc <- c()
@@ -49,7 +49,7 @@ rf_model_base_rfe <- pipeline_casero(hp_train,
                                 model="ranger",
                                 tunegrid=tg)
 
-saveRDS(rf_model_base_rfe, "./models/rf_model_base_rfe.RData")
+saveRDS(rf_model_base_rfe, "./models/rf_model_base_rfe.rds")
 
 
 pp <- c(create_date_features, rm_zip, rm_id)
@@ -68,7 +68,7 @@ rf_model_gridsearch <- pipeline_casero(hp_train,
                                 model="ranger",
                                 tunegrid=tg)
 
-saveRDS(rf_model_gridsearch, "./models/rf_model_gridsearch.RData")
+saveRDS(rf_model_gridsearch, "./models/rf_model_gridsearch.rds")
 
 
 

@@ -29,7 +29,7 @@ pipeline_casero <- function(df, preprocessing=c(), creation=c(), selection=c(),
                    maximize=FALSE,
                    trControl=tc,
                    tuneGrid=tunegrid,
-                   tuneLength=tunlength)
+                   tuneLength=tunelength)
   
   print(paste("Finished!", Sys.time()))
   

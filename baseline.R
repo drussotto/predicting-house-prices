@@ -10,7 +10,7 @@ fc <- c()
 
 lm_baseline <- pipeline_casero(hp_train, pp, fc, model="lm")
 
-saveRDS(lm_baseline, "./models/linear_baseline.RData")
+saveRDS(lm_baseline, "./models/linear_baseline.rds")
 
 
 pp <- c(create_date_features, rm_zip, rm_id)
@@ -25,4 +25,4 @@ rf_baseline <- pipeline_casero(hp_train,
                                model="ranger",
                                tunegrid=tg)
 
-saveRDS(rf_baseline, "./models/rf_baseline.RData")
+saveRDS(rf_baseline, "./models/rf_baseline.rds")
