@@ -1,0 +1,99 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+source("./scripts/load_dependencies.R")
+```
+
+```{r}
+hp_train <- fread("./data/house_price_train.csv")
+summary(hp_train)
+```
+
+We want to convert the date into individual features to split it from a very large factor variable into numeric features.
+
+Additionally, the ID will not help us in making predictions so we will drop it.
+
+While ZIP codes are probably an important and relevant thing to consider in prediction, there are so many of them (`r length(unique(hp_train$zipcode))`) that it makes it infeasible to 
+
+
+```{r}
+pp <- c(create_date_features, rm_zip, rm_id)
+
+for (p_step in pp) {
+  hp_train <- p_step(hp_train)
+}
+
+summary(hp_train)
+```
+
+Feature Creation
+
+
+```{r}
+
+original_features <- names(hp_train)
+
+fc <- c(yrs_since_renovated, sum_grades, bed_bath_ratio, size_yard, cluster_loc)
+
+for (create_step in fc) {
+  hp_train <- create_step()
+}
+
+summary(hp_train[,setdiff(names(hp_train), original_features)])
+
+
+```
+
+Feature Selection
+
+
+```{r}
+final_model <- readRDS("./models/rf_model_gridsearch.rds")
+
+final_model$coefnames
+```
+
+Cross Validation
+
+```{r}
+final_model$results
+
+final_model$results[final_model$results$MAPE==min(final_model$results$MAPE),]
+```
+
+```{r}
+
+```
+
+Note: just a copy of "make_predictions.R"
+
+```{r}
+pp <- c(create_date_features, rm_zip, rm_id)
+fc <- c(yrs_since_renovated, sum_grades, bed_bath_ratio, size_yard, cluster_loc)
+
+
+make_predictions <- function(df, preprocessing, feature_creation, train_obj) {
+  df <- data.table(df)
+  
+  for(f in c(preprocessing,feature_creation)) {
+    df <- f(df)
+  }
+  
+  print(names(df))
+  
+  df <- one_hot(df)[,train_obj$coefnames,with=F]
+  
+  return(predict(train_obj$finalModel, df))
+}
+
+
+
+preds <- make_predictions(hp_test, pp, fc, rf_model_gridsearch)
+
+guesses <- data.table(id=hp_test$id, pred=preds$predictions)
+fwrite(guesses, "./data/guesses.csv")
+```
+
