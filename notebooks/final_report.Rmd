@@ -3,21 +3,46 @@ title: "R Notebook"
 output: html_notebook
 ---
 
+# Final Report
+
+In this project I aim to predict house prices based on data about the houses themselves. The following is a summary of the process of preparing the data, creation of additional features, and building the final model to make the predictions. In the end, this model is then used to make predictions on a blind test set with unknown observed values.
+
+Several different libraries were used, and I made many utility functions for preprocessing the data, creating additional features, performing feature selection, and tuning the final model. Before each of the modeling steps I run the following script to load all of those libraries and utility functions.
+
 ```{r}
+# knitr changes working directory to where notebook is located instead of project root
+setwd("..")
 source("./scripts/load_dependencies.R")
 ```
 
+### The Data
+
 ```{r}
+setwd("..")
 hp_train <- fread("./data/house_price_train.csv")
-summary(hp_train)
 ```
+
+
+The dataset provided for tuning the model is a CSV containing `r nrow(hp_train)` rows and `r ncol(hp_train)` features. Most of them are numeric, with the exception of a unique identifier for each row "ID" and a date field indicating when the house was sold.
+
+The following graph shows the distribution of these features. For more graphs, see "scripts/EDA.R"
+
+```{r fig.width=12, fig.height=12, warning=FALSE}
+summary(hp_train)
+
+# Just to speed things up - should  still give a good idea of the distribution
+ggpairs(hp_train[sample(nrow(hp_train), 100), 3:ncol(hp_train)], progress=FALSE)
+```
+
+### Preprocessing
 
 We want to convert the date into individual features to split it from a very large factor variable into numeric features.
 
 Additionally, the ID will not help us in making predictions so we will drop it.
 
-While ZIP codes are probably an important and relevant thing to consider in prediction, there are so many of them (`r length(unique(hp_train$zipcode))`) that it makes it infeasible to 
+While ZIP codes are probably an important and relevant thing to consider in prediction, there are so many of them (`r length(unique(hp_train$zipcode))`) that it makes it infeasible to use all of them. We still have location information via latitude and longitude, and this is a more manageable representation of location for modeling purposes.
 
+The code for these preprocessing steps can be found in "scripts/preprocessing.R"
 
 ```{r}
 pp <- c(create_date_features, rm_zip, rm_id)
@@ -29,8 +54,22 @@ for (p_step in pp) {
 summary(hp_train)
 ```
 
-Feature Creation
+### Feature Creation
 
+The next thing I wanted to do was create some additional features based on what I had. The features I created are as follows:
+
+yrs_since_renovated: Many of the homes have been renovated since they were originally built. This feature supposes that the amount of time since the last time the house was renovated has an impact on the price. It is the number of years between the renovation and sale of the home. If the house was never renovated, then it is the number of years since the house was built.
+
+sum_grades: Several of the features are ranked categorical variables that I treat as numeric. These are view, grade, and condition. This feature combines these by adding them together.
+
+bed_bath_ratio: This feature is the ratio of bedrooms to bathrooms. It is assumed that the number of bedrooms corresponds roughly with the number of inhabitants, so a high ratio would be a bad thing and therefore have a negative impact on the price (at least, this is the supposition).
+
+size_yard: Since available information includes both the square footage of the living space and the square footage of the lot that the house stands on, we can estimate the amount of property that is not occupied by the house, or a yard. Presumably this is a good thing and would have a positive impact on the price of the house.
+
+cluster_loc: To explicitly group houses based on location, the DBSCAN clustering algorithm was used on latitude and longitude to make clusters of the houses based on their location.
+
+
+The code for feature creation can be found in "scripts/feature_creation.R"
 
 ```{r}
 
@@ -39,38 +78,58 @@ original_features <- names(hp_train)
 fc <- c(yrs_since_renovated, sum_grades, bed_bath_ratio, size_yard, cluster_loc)
 
 for (create_step in fc) {
-  hp_train <- create_step()
+  hp_train <- create_step(hp_train)
 }
 
-summary(hp_train[,setdiff(names(hp_train), original_features)])
+hp_train[,setdiff(names(hp_train), original_features)]
 
 
 ```
 
-Feature Selection
+### Feature Selection
 
+Since many of the features may not have a big impact on the final result of the model, we want to remove some to find the ideal number of features for the best result. To do this Recursive Feature Elimination was used, performing 3-fold cross validation to see which combination of features has the best result. All columns were tried, and the decreasing by 10% of the columns down to 70% of the original features.
+
+To save time on execution, here we will simply read the final model built and print the feature names.
+
+The code for the RFE used can be found in "scrips/feature_selection.R"
 
 ```{r}
+setwd("..")
 final_model <- readRDS("./models/rf_model_gridsearch.rds")
 
 final_model$coefnames
 ```
 
-Cross Validation
+### Modeling
+
+Finally, models were built. The best result found was Random Forest, so this is the algorithm we will focus on here. To tune the random forest, a grid search was performed on the number of columns used for each tree (mtry) and the number of records required to make a split.
+
+The results are as follows:
 
 ```{r}
 final_model$results
-
-final_model$results[final_model$results$MAPE==min(final_model$results$MAPE),]
 ```
 
+The MAPE in cross validation tended to be around 13%. Since these models are essentially trained with only 2/3s of the data and use the last third for testing, the final score from the final model should be slightly better since it will be trained on the entire dataset.
+
+The best model had `r final_model$results$MAPE==min(final_model$results$mtry)` features in each tree and required `r final_model$results$MAPE==min(final_model$results$min.node.size)` records for an additional split, resulting in an MAPE of `r final_model$results[final_model$results$MAPE==min(final_model$results$MAPE),]`
+
+The code for the modeling steps can be found in "scripts/models.R". This includes several models that proved to not work as well as the final model that was tuned. The code for the pipeline that applies the preprocessing, creation, and selection steps as well as the modeling can be found in "scripts/pipeline_casero.R"
+
+
+### Making Predictions
+
+Now that a final model has been tuned, the final step is to apply the model to the blind test set to make predicitons. These predictions are written to a file called "guesses.csv"
+
+
+(Note: the following code is  just a copy of "script/make_predictions.R")
+
+
 ```{r}
+setwd("..")
 
-```
-
-Note: just a copy of "make_predictions.R"
-
-```{r}
+hp_test <- fread("./data/house_price_test.csv")
 pp <- c(create_date_features, rm_zip, rm_id)
 fc <- c(yrs_since_renovated, sum_grades, bed_bath_ratio, size_yard, cluster_loc)
 
@@ -91,7 +150,7 @@ make_predictions <- function(df, preprocessing, feature_creation, train_obj) {
 
 
 
-preds <- make_predictions(hp_test, pp, fc, rf_model_gridsearch)
+preds <- make_predictions(hp_test, pp, fc, final_model)
 
 guesses <- data.table(id=hp_test$id, pred=preds$predictions)
 fwrite(guesses, "./data/guesses.csv")
